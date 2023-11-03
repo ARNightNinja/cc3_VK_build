@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <title>CarCrash3</title>
+        <title>CarCrash3_V2_WebGL</title>
         <style>
             html, body {
                 width: 100%;
@@ -24,7 +24,6 @@
                 bottom: 0px;
                 width: 100%;
                 height: 90px;
-                display: none;
             }
             #loading-overlay {
                 font-size: 20px;
@@ -51,13 +50,13 @@
                 border-radius: 3px;
                 width: 0%;
                 height: 100%;
-                background: #FF9A00;
+                background: #FAFAFA;
             }
         </style>
     </head>
     <body>
         <canvas id="canvas" class="fullscreen"></canvas>
-        <div id="banner-container"></div>
+        <div id="banner-container" style="display: none"></div>
         <div id="loading-overlay" class="fullscreen">
             <img id="icon" src="./icon.png" />
             <div id="progress-bar"><div id="progress-bar-fill"></div></div>
@@ -147,18 +146,22 @@
                     bridge.advertisement.on('rewarded_state_changed', state => sendMessageToUnity('OnRewardedStateChanged', state))
                     bridge.game.on('visibility_state_changed', state => sendMessageToUnity('OnVisibilityStateChanged', state))
 
+                    if (bridge.platform.id === bridge.PLATFORM_ID.YANDEX || bridge.platform.id === bridge.PLATFORM_ID.GAME_DISTRIBUTION) {
+                        bridge.advertisement.showInterstitial()
+                    }
+
                     let unityLoader = document.createElement('script')
-                    unityLoader.src = 'Build/cc3_VK_build.loader.js'
+                    unityLoader.src = 'Build/CarCrash3.loader.js'
                     unityLoader.onload = () => {
                         createUnityInstance(
                             canvas,
                             {
-                                dataUrl: 'Build/3ad77f88f0d1b9a8653d721aef7ab568.data.unityweb',
-                                frameworkUrl: 'Build/a77fc4e4d99b7065aee81384cd82c6ed.js.unityweb',
-                                codeUrl: 'Build/04dcf4b429c39a80cfd8d6c2c234d0ee.wasm.unityweb',
+                                dataUrl: 'Build/5c6f71e92b073465727704d223062baf.data.unityweb',
+                                frameworkUrl: 'Build/d521e56e2626bd57188121d448077f44.js.unityweb',
+                                codeUrl: 'Build/3d8554cd742a8307e91cd7d7d0a358ae.wasm.unityweb',
                                 streamingAssetsUrl: 'StreamingAssets',
-                                companyName: 'KreizLand',
-                                productName: 'CarCrash3',
+                                companyName: 'DefaultCompany',
+                                productName: 'CarCrash3_V2_WebGL',
                                 productVersion: '0.1',
                                 // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
                                 // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
@@ -174,6 +177,10 @@
                             })
                     }
                     document.body.appendChild(unityLoader)
+					
+					if (bridge.platform.id === bridge.PLATFORM_ID.YANDEX) {
+						bridge.advertisement.showInterstitial()
+					} 
                 })
                 .catch(error => console.error(error))
             
@@ -349,6 +356,14 @@
 
 
             // advertisement
+            window.getInterstitialState = function() {
+                if (bridge.advertisement.interstitialState) {
+                    return bridge.advertisement.interstitialState
+                } else {
+                    return ''
+                }
+            }
+
             window.getIsBannerSupported = function() {
                 return bridge.advertisement.isBannerSupported.toString()
             }
@@ -358,7 +373,13 @@
             }
 
             window.setMinimumDelayBetweenInterstitial = function(options) {
-                bridge.advertisement.setMinimumDelayBetweenInterstitial(JSON.parse(options))
+                if (options) {
+                    options = JSON.parse(options)
+                } else {
+                    options = { }
+                }
+                
+                bridge.advertisement.setMinimumDelayBetweenInterstitial(options)
             }
 
             window.showBanner = function(options) {
