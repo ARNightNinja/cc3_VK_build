@@ -19,35 +19,6 @@
                 top: 0px;
                 left: 0px;
             }
-			
-			canvas:focus { 
-			outline: none; 
-			   } 
-			   html, body { 
-				width: 100%; 
-				height: 100%; 
-				padding: 0px; 
-				margin: 0px; 
-				/* Отключаем скролл и лонгтап на IOS */ 
-				overflow: hidden; 
-				-webkit-touch-callout: none; 
-				-webkit-user-select: none; 
-				-khtml-user-select: none; 
-				-moz-user-select: none; 
-				-ms-user-select: none; 
-				user-select: none; 
-				-webkit-tap-highlight-color: rgba(0,0,0,0); 
-			   } 
-			 .fullscreen { 
-			 background: #383838; 
-			 width: 100%; 
-			 height: 100%; 
-			 position: absolute; 
-			 top: 0px; 
-			 left: 0px; 
-			 }
-			
-			
             #banner-container {
                 position: absolute;
                 bottom: 0px;
@@ -185,9 +156,9 @@
                         createUnityInstance(
                             canvas,
                             {
-                                dataUrl: 'Build/b32dace79a5cb4e74e3c3af67434ff83.data.unityweb',
-                                frameworkUrl: 'Build/725390de42df60ef1f278693bc9bb279.framework.js.unityweb',
-                                codeUrl: 'Build/d494e08294d5d38db86aa8f5d26a1134.wasm.unityweb',
+                                dataUrl: 'Build/71e086e1b377c45c34c922b1aff0941f.data.unityweb',
+                                frameworkUrl: 'Build/00c2dc5a22383d3db2ae3c93d4712cae.framework.js.unityweb',
+                                codeUrl: 'Build/c8e6bcb8614ef253e9430d25528f1229.wasm.unityweb',
                                 streamingAssetsUrl: 'StreamingAssets',
                                 companyName: 'Car.Crash.Simulator.Sandbox',
                                 productName: 'CarCrash',
@@ -398,12 +369,6 @@
             }
 
             window.setMinimumDelayBetweenInterstitial = function(options) {
-                if (options) {
-                    options = JSON.parse(options)
-                } else {
-                    options = { }
-                }
-                
                 bridge.advertisement.setMinimumDelayBetweenInterstitial(options)
             }
 
@@ -437,12 +402,8 @@
                 bridge.advertisement.hideBanner()
             }
 
-            window.showInterstitial = function(options) {
-                if (options) {
-                    options = JSON.parse(options)
-                }
-
-                bridge.advertisement.showInterstitial(options)
+            window.showInterstitial = function() {
+                bridge.advertisement.showInterstitial()
             }
 
             window.showRewarded = function() {
@@ -497,8 +458,12 @@
                     })
             }
 
-            window.inviteFriends = function() {
-                bridge.social.inviteFriends()
+            window.inviteFriends = function(options) {
+                if (options) {
+                    options = JSON.parse(options)
+                }
+                
+                bridge.social.inviteFriends(options)
                     .then(() => {
                         sendMessageToUnity('OnInviteFriendsCompleted', 'true')
                     })
@@ -573,10 +538,6 @@
 
             window.getIsLeaderboardNativePopupSupported = function() {
                 return bridge.leaderboard.isNativePopupSupported.toString()
-            }
-
-            window.getIsLeaderboardMultipleBoardsSupported = function() {
-                return bridge.leaderboard.isMultipleBoardsSupported.toString()
             }
 
             window.getIsLeaderboardSetScoreSupported = function() {
@@ -667,8 +628,12 @@
                 return bridge.payments.isSupported.toString()
             }
 
-            window.paymentsPurchase = function(purchaseId) {
-                bridge.payments.purchase(purchaseId)
+            window.paymentsPurchase = function(options) {
+                if (options) {
+                    options = JSON.parse(options)
+                }
+                
+                bridge.payments.purchase(options)
                     .then(() => {
                         sendMessageToUnity('OnPaymentsPurchaseCompleted', 'true')
                     })
@@ -677,8 +642,12 @@
                     })
             }
 
-            window.paymentsConsumePurchase = function(purchaseToken) {
-                bridge.payments.consumePurchase(purchaseToken)
+            window.paymentsConsumePurchase = function(options) {
+                if (options) {
+                    options = JSON.parse(options)
+                }
+                
+                bridge.payments.consumePurchase(options)
                     .then(() => {
                         sendMessageToUnity('OnPaymentsConsumePurchaseCompleted', 'true')
                     })
@@ -735,8 +704,6 @@
             window.remoteConfigGet = function(options) {
                 if (options) {
                     options = JSON.parse(options)
-                } else {
-                    options = { clientFeatures: [] }
                 }
 
                 bridge.remoteConfig.get(options)
