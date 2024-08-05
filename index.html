@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <title>CarCrash3_V2_WebGL</title>
+        <title>CarCrash</title>
         <style>
             html, body {
                 width: 100%;
@@ -19,6 +19,35 @@
                 top: 0px;
                 left: 0px;
             }
+			
+			canvas:focus { 
+			outline: none; 
+			   } 
+			   html, body { 
+				width: 100%; 
+				height: 100%; 
+				padding: 0px; 
+				margin: 0px; 
+				/* Отключаем скролл и лонгтап на IOS */ 
+				overflow: hidden; 
+				-webkit-touch-callout: none; 
+				-webkit-user-select: none; 
+				-khtml-user-select: none; 
+				-moz-user-select: none; 
+				-ms-user-select: none; 
+				user-select: none; 
+				-webkit-tap-highlight-color: rgba(0,0,0,0); 
+			   } 
+			 .fullscreen { 
+			 background: #383838; 
+			 width: 100%; 
+			 height: 100%; 
+			 position: absolute; 
+			 top: 0px; 
+			 left: 0px; 
+			 }
+			
+			
             #banner-container {
                 position: absolute;
                 bottom: 0px;
@@ -151,17 +180,17 @@
                     }
 
                     let unityLoader = document.createElement('script')
-                    unityLoader.src = 'Build/CarCrash3.loader.js'
+                    unityLoader.src = 'Build/d9d605cb1c18b4ed9fb179406f02ceab.loader.js'
                     unityLoader.onload = () => {
                         createUnityInstance(
                             canvas,
                             {
-                                dataUrl: 'Build/5ab93bfa492878fa9a772074c048b970.data.unityweb',
-                                frameworkUrl: 'Build/d521e56e2626bd57188121d448077f44.js.unityweb',
-                                codeUrl: 'Build/099d2f0fee7c8311779c7881a350c316.wasm.unityweb',
+                                dataUrl: 'Build/b32dace79a5cb4e74e3c3af67434ff83.data.unityweb',
+                                frameworkUrl: 'Build/725390de42df60ef1f278693bc9bb279.framework.js.unityweb',
+                                codeUrl: 'Build/d494e08294d5d38db86aa8f5d26a1134.wasm.unityweb',
                                 streamingAssetsUrl: 'StreamingAssets',
-                                companyName: 'DefaultCompany',
-                                productName: 'CarCrash3_V2_WebGL',
+                                companyName: 'Car.Crash.Simulator.Sandbox',
+                                productName: 'CarCrash',
                                 productVersion: '0.1',
                                 // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
                                 // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
@@ -177,10 +206,6 @@
                             })
                     }
                     document.body.appendChild(unityLoader)
-					
-					if (bridge.platform.id === bridge.PLATFORM_ID.YANDEX) {
-						bridge.advertisement.showInterstitial()
-					} 
                 })
                 .catch(error => console.error(error))
             
@@ -635,6 +660,100 @@
                     })
                     .catch(error => {
                         sendMessageToUnity('OnLeaderboardShowNativePopupCompleted', 'false')
+                    })
+            }
+
+            window.getIsPaymentsSupported = function() {
+                return bridge.payments.isSupported.toString()
+            }
+
+            window.paymentsPurchase = function(purchaseId) {
+                bridge.payments.purchase(purchaseId)
+                    .then(() => {
+                        sendMessageToUnity('OnPaymentsPurchaseCompleted', 'true')
+                    })
+                    .catch(error => {
+                        sendMessageToUnity('OnPaymentsPurchaseCompleted', 'false')
+                    })
+            }
+
+            window.paymentsConsumePurchase = function(purchaseToken) {
+                bridge.payments.consumePurchase(purchaseToken)
+                    .then(() => {
+                        sendMessageToUnity('OnPaymentsConsumePurchaseCompleted', 'true')
+                    })
+                    .catch(error => {
+                        sendMessageToUnity('OnPaymentsConsumePurchaseCompleted', 'false')
+                    })
+            }
+
+            window.paymentsGetCatalog = function() {
+                bridge.payments.getCatalog()
+                    .then(data => {
+                        if (data) {
+                            if (typeof data !== 'string') {
+                                data = JSON.stringify(data)
+                            }
+
+                            data = data.replaceAll('imageURI', 'icon')
+
+                            sendMessageToUnity('OnPaymentsGetCatalogCompletedSuccess', data)
+                        } else {
+                            sendMessageToUnity('OnPaymentsGetCatalogCompletedSuccess', '')
+                        }
+                    })
+                    .catch(error => {
+                        sendMessageToUnity('OnPaymentsGetCatalogCompletedFailed', 'false')
+                    })
+            }
+
+            window.paymentsGetPurchases = function() {
+                bridge.payments.getPurchases()
+                    .then(data => {
+                        if (data) {
+                            if (typeof data !== 'string') {
+                                data = JSON.stringify(data)
+                            }
+
+                            data = data.replaceAll('productID', 'id')
+                            data = data.replaceAll('purchaseToken', 'token')
+
+                            sendMessageToUnity('OnPaymentsGetPurchasesCompletedSuccess', data)
+                        } else {
+                            sendMessageToUnity('OnPaymentsGetPurchasesCompletedSuccess', '')
+                        }
+                    })
+                    .catch(error => {
+                        sendMessageToUnity('OnPaymentsGetPurchasesCompletedFailed', 'false')
+                    })
+            }
+
+            window.getIsRemoteConfigSupported = function() {
+                return bridge.remoteConfig.isSupported.toString()
+            }
+
+            window.remoteConfigGet = function(options) {
+                if (options) {
+                    options = JSON.parse(options)
+                } else {
+                    options = { clientFeatures: [] }
+                }
+
+                bridge.remoteConfig.get(options)
+                    .then(data => {
+                        let keys = Object.keys(data)
+                        let values = []
+
+                        for (let i = 0; i < keys.length; i++) {
+                            let name = keys[i]
+                            let value = data[name]
+                            values.push({ name, value })
+                        }
+
+                        sendMessageToUnity('OnRemoteConfigGetSuccess', JSON.stringify(values))
+                    })
+                    .catch(error => {
+                        sendMessageToUnity('OnRemoteConfigGetFailed', '')
                     })
             }
         </script>
